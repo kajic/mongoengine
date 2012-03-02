@@ -971,6 +971,23 @@ class QuerySetTest(unittest.TestCase):
         self.assertEqual(obj.content_type, 'text/plain')
 
         Email.drop_collection()
+    
+    def test_not_declared_field_with_colliding_property(self):
+        class Email(Document):
+            meta = {"allow_inheritance":False}
+            subject = StringField()
+            body = StringField()
+            
+            @property
+            def body_length(self):
+                return len(self.body)
+        
+        Email.objects._collection.insert({"subject":"Hello World!", "body":"I am alive", "body_length":10}, safe=True)
+        email = Email.objects.get()
+        
+        self.assertEqual(email.subject, "Hello World!")
+        self.assertEqual(email.body, "I am alive")
+        self.assertEqual(email.body_length, 10)
 
     def test_slicing_fields(self):
         """Ensure that query slicing an array works.

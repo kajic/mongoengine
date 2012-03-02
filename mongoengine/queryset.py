@@ -327,7 +327,7 @@ class QuerySet(object):
         self._query_obj = Q()
         self._initial_query = {}
         self._where_clause = None
-        self._loaded_fields = QueryFieldList()
+        self._loaded_fields = QueryFieldList(document._fields.iterkeys())
         self._ordering = []
         self._snapshot = False
         self._timeout = True
