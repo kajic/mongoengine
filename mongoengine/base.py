@@ -830,8 +830,11 @@ class BaseDocument(object):
         if not self._created and name in self._meta.get('shard_key', tuple()):
             from queryset import OperationError
             raise OperationError("Shard Keys are immutable. Tried to update %s" % name)
-
-        super(BaseDocument, self).__setattr__(name, value)
+        
+        try:
+            super(BaseDocument, self).__setattr__(name, value)
+        except AttributeError:
+            pass
 
     def __expand_dynamic_values(self, name, value):
         """expand any dynamic values to their correct types / values"""
