@@ -41,7 +41,7 @@ class ConnectionTest(unittest.TestCase):
         c.admin.authenticate("admin", "password")
         c.mongoenginetest.add_user("username", "password")
 
-        self.assertRaises(ConnectionError, connect, "testdb_uri_bad", host='mongodb://test:password@localhost')
+        self.assertRaises(ConnectionError, connect, "testdb_uri_bad", host='mongodb://test:password@localhost/mongoenginetest')
 
         connect("testdb_uri", host='mongodb://username:password@localhost/mongoenginetest')
 
