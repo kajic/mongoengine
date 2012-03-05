@@ -285,25 +285,29 @@ class QueryFieldList(object):
     def as_dict(self):
         field_list = dict((field, self.value) for field in self.fields)
         if self._id is not None:
-            field_list['_id'] = self._id
+            field_list['_id'] = self.value
         return field_list
 
     def __add__(self, f):
-        if not self.fields:
-            self.fields = f.fields
-            self.value = f.value
-        elif self.value is self.ONLY and f.value is self.ONLY:
-            self.fields = self.fields.intersection(f.fields)
-        elif self.value is self.EXCLUDE and f.value is self.EXCLUDE:
-            self.fields = self.fields.union(f.fields)
-        elif self.value is self.ONLY and f.value is self.EXCLUDE:
-            self.fields -= f.fields
-        elif self.value is self.EXCLUDE and f.value is self.ONLY:
-            self.value = self.ONLY
-            self.fields = f.fields - self.fields
-
+        print "self.fields", self.fields, ",", f.fields
         if '_id' in f.fields:
             self._id = f.value
+
+        if self.fields:
+            if self.value is self.ONLY and f.value is self.ONLY:
+                self.fields = self.fields.intersection(f.fields)
+            elif self.value is self.EXCLUDE and f.value is self.EXCLUDE:
+                self.fields = self.fields.union(f.fields)
+            elif self.value is self.ONLY and f.value is self.EXCLUDE:
+                self.fields -= f.fields                
+            elif self.value is self.EXCLUDE and f.value is self.ONLY:
+                self.value = self.ONLY
+                self.fields = f.fields - self.fields
+        else:
+            self.fields = f.fields
+            self.value = f.value
+
+        
 
         if self.always_include:
             if self.value is self.ONLY and self.fields:
@@ -341,12 +345,13 @@ class QuerySet(object):
         self._class_check = True
         self._slave_okay = False
         self._scalar = []
+        self.only(*document._fields)
 
         # If inheritance is allowed, only return instances and instances of
         # subclasses of the class being used
         if document._meta.get('allow_inheritance'):
             self._initial_query = {'_types': self._document._class_name}
-            self._loaded_fields = QueryFieldList(always_include=['_cls'])
+            self._loaded_fields += QueryFieldList(always_include=['_cls'])
         self._cursor_obj = None
         self._limit = None
         self._skip = None
@@ -559,7 +564,6 @@ class QuerySet(object):
     @property
     def _cursor(self):
         if self._cursor_obj is None:
-
             self._cursor_obj = self._collection.find(self._query,
                                                      **self._cursor_args)
             # Apply where clauses to cursor

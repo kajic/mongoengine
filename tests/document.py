@@ -807,12 +807,17 @@ class DocumentTest(unittest.TestCase):
         # Need to be explicit about covered indexes as mongoDB doesn't know if
         # the documents returned might have more keys in that here.
         query_plan = Test.objects(id=obj.id).exclude('a').explain()
-        self.assertFalse(query_plan['indexOnly'])
+        self.assertTrue(query_plan['indexOnly'])
 
         query_plan = Test.objects(id=obj.id).only('id').explain()
         self.assertTrue(query_plan['indexOnly'])
 
-        query_plan = Test.objects(a=1).only('a').exclude('id').explain()
+        query_plan = Test.objects(a=1).only('a').exclude('id')
+        query_plan = Test.objects(a=1).only('a').exclude('id')
+        from pprint import pformat
+        print "qp", pformat(query_plan._loaded_fields.as_dict())
+        query_plan = query_plan.explain()
+        print "explain", pformat(query_plan)
         self.assertTrue(query_plan['indexOnly'])
 
     def test_hint(self):
@@ -1390,7 +1395,10 @@ class DocumentTest(unittest.TestCase):
         self.assertEqual(person.age, 30)
 
         # test exclude only updates set fields
-        person = self.Person.objects.exclude('name').get()
+        from pprint import pformat
+        qs = self.Person.objects.exclude('name')
+        print "HEJ", pformat(qs._loaded_fields.as_dict())
+        person = qs.get()
         person.age = 21
         person.save()
 

@@ -981,6 +981,7 @@ class QuerySetTest(unittest.TestCase):
             @property
             def body_length(self):
                 return len(self.body)
+        Email.drop_collection()
         
         Email.objects._collection.insert({"subject":"Hello World!", "body":"I am alive", "body_length":10}, safe=True)
         email = Email.objects.get()

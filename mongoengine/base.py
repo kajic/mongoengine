@@ -831,10 +831,7 @@ class BaseDocument(object):
             from queryset import OperationError
             raise OperationError("Shard Keys are immutable. Tried to update %s" % name)
         
-        try:
-            super(BaseDocument, self).__setattr__(name, value)
-        except AttributeError:
-            pass
+        super(BaseDocument, self).__setattr__(name, value)
 
     def __expand_dynamic_values(self, name, value):
         """expand any dynamic values to their correct types / values"""
